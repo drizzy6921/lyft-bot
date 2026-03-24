@@ -8,12 +8,18 @@ app = Flask(__name__)
 
 # --- Twitter/X Client ---
 def get_twitter_client():
+    key = os.environ.get("TWITTER_API_KEY", "MISSING")
+    secret = os.environ.get("TWITTER_API_SECRET", "MISSING")
+    token = os.environ.get("TWITTER_ACCESS_TOKEN", "MISSING")
+    token_secret = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET", "MISSING")
+    print(f"KEY={key[:6]}... SECRET={secret[:6]}... TOKEN={token[:6]}... TOKEN_SECRET={token_secret[:6]}...")
     return tweepy.Client(
-        consumer_key=os.environ["TWITTER_API_KEY"],
-        consumer_secret=os.environ["TWITTER_API_SECRET"],
-        access_token=os.environ["TWITTER_ACCESS_TOKEN"],
-        access_token_secret=os.environ["TWITTER_ACCESS_TOKEN_SECRET"],
+        consumer_key=key,
+        consumer_secret=secret,
+        access_token=token,
+        access_token_secret=token_secret,
     )
+
 
 # --- State (in-memory, persists while server is running) ---
 state = {
