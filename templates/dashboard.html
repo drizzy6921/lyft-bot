@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lyft Bot Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111;
+      --border: #222;
+      --accent: #c8f135;
+      --accent2: #ff3e6c;
+      --text: #f0f0f0;
+      --muted: #555;
+      --online-color: #c8f135;
+      --offline-color: #ff3e6c;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+    }
+
+    header span {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .card label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .card .value {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+      background: {% if state.online %}var(--online-color){% else %}var(--offline-color){% endif %};
+      box-shadow: {% if state.online %}0 0 8px var(--online-color){% else %}none{% endif %};
+    }
+
+    .status-text {
+      color: {% if state.online %}var(--online-color){% else %}var(--offline-color){% endif %};
+    }
+
+    .log-section {
+      margin-top: 1rem;
+    }
+
+    .log-section h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .tweet-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .tweet-item .tweet-text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      color: var(--text);
+    }
+
+    .tweet-item .tweet-time {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      letter-spacing: 0.08em;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 1rem 0;
+    }
+
+    .refresh-note {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 2rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>LYFT BOT</h1>
+    <span>Live Dashboard</span>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <label>Status</label>
+      <div class="value">
+        <span class="status-dot"></span>
+        <span class="status-text">{% if state.online %}ONLINE{% else %}OFFLINE{% endif %}</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Hours Online</label>
+      <div class="value">
+        {% if state.online_since %}
+          {{ ((now - state.online_since).total_seconds() / 3600) | round(1) }}h
+        {% else %}
+          --
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <label>Current Area</label>
+      <div class="value">{{ state.last_area or "--" }}</div>
+    </div>
+
+    <div class="card">
+      <label>Now Playing</label>
+      <div class="value" style="font-size:0.95rem">{{ state.last_song or "--" }}</div>
+    </div>
+  </div>
+
+  <div class="log-section">
+    <h2>Tweet Log</h2>
+    {% if state.tweet_log %}
+      {% for tweet in state.tweet_log %}
+        <div class="tweet-item">
+          <div class="tweet-text">{{ tweet.text }}</div>
+          <div class="tweet-time">{{ tweet.time }}</div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">No tweets posted yet.</div>
+    {% endif %}
+  </div>
+
+  <p class="refresh-note">Refresh this page to update. Auto-refreshes every 60s.</p>
+  <script>setTimeout(() => location.reload(), 60000);</script>
+</body>
+</html>
